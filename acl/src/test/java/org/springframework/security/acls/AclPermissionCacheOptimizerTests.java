@@ -17,6 +17,7 @@ package org.springframework.security.acls;
 
 import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
 import org.springframework.security.acls.model.AclService;
@@ -34,21 +35,28 @@ import java.util.List;
  */
 @SuppressWarnings({ "unchecked" })
 public class AclPermissionCacheOptimizerTests {
+	private AclService service;
+	private ObjectIdentityRetrievalStrategy oidStrategy;
+	private SidRetrievalStrategy sidStrategy;
+
+	@Before
+	public void setup() {
+		service = mock(AclService.class);
+		oidStrategy = mock(ObjectIdentityRetrievalStrategy.class);
+		sidStrategy = mock(SidRetrievalStrategy.class);
+		when(service.getObjectIdentityRetrievalStrategy()).thenReturn(oidStrategy);
+		when(service.getSidRetrievalStrategy()).thenReturn(sidStrategy);
+	}
 
 	@Test
 	public void eagerlyLoadsRequiredAcls() throws Exception {
-		AclService service = mock(AclService.class);
-		AclPermissionCacheOptimizer pco = new AclPermissionCacheOptimizer(service);
-		ObjectIdentityRetrievalStrategy oidStrat = mock(ObjectIdentityRetrievalStrategy.class);
-		SidRetrievalStrategy sidStrat = mock(SidRetrievalStrategy.class);
-		pco.setObjectIdentityRetrievalStrategy(oidStrat);
-		pco.setSidRetrievalStrategy(sidStrat);
 		Object[] dos = { new Object(), null, new Object() };
 		ObjectIdentity[] oids = { new ObjectIdentityImpl("A", "1"),
 				new ObjectIdentityImpl("A", "2") };
-		when(oidStrat.getObjectIdentity(dos[0])).thenReturn(oids[0]);
-		when(oidStrat.getObjectIdentity(dos[2])).thenReturn(oids[1]);
+		when(oidStrategy.getObjectIdentity(dos[0])).thenReturn(oids[0]);
+		when(oidStrategy.getObjectIdentity(dos[2])).thenReturn(oids[1]);
 
+		AclPermissionCacheOptimizer pco = new AclPermissionCacheOptimizer(service);
 		pco.cachePermissionsFor(mock(Authentication.class), Arrays.asList(dos));
 
 		// AclService should be invoked with the list of required Oids
@@ -57,16 +65,11 @@ public class AclPermissionCacheOptimizerTests {
 
 	@Test
 	public void ignoresEmptyCollection() {
-		AclService service = mock(AclService.class);
 		AclPermissionCacheOptimizer pco = new AclPermissionCacheOptimizer(service);
-		ObjectIdentityRetrievalStrategy oids = mock(ObjectIdentityRetrievalStrategy.class);
-		SidRetrievalStrategy sids = mock(SidRetrievalStrategy.class);
-		pco.setObjectIdentityRetrievalStrategy(oids);
-		pco.setSidRetrievalStrategy(sids);
-
+		reset(service);
 		pco.cachePermissionsFor(mock(Authentication.class), Collections.emptyList());
 
-		verifyZeroInteractions(service, sids, oids);
+		verifyZeroInteractions(service, sidStrategy, oidStrategy);
 	}
 
 }

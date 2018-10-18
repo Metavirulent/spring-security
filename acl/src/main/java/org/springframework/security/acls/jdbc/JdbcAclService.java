@@ -29,11 +29,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
-import org.springframework.security.acls.model.Acl;
-import org.springframework.security.acls.model.AclService;
-import org.springframework.security.acls.model.NotFoundException;
-import org.springframework.security.acls.model.ObjectIdentity;
-import org.springframework.security.acls.model.Sid;
+import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
+import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
+import org.springframework.security.acls.model.*;
 import org.springframework.util.Assert;
 
 /**
@@ -68,6 +66,9 @@ public class JdbcAclService implements AclService {
 
 	protected final JdbcTemplate jdbcTemplate;
 	private final LookupStrategy lookupStrategy;
+	private final SidRetrievalStrategy sidRetrievalStrategy;
+	private final ObjectIdentityGenerator objectIdentityGenerator;
+	private final ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy;
 	private boolean aclClassIdSupported;
 	private String findChildrenSql = DEFAULT_SELECT_ACL_WITH_PARENT_SQL;
 	private AclClassIdUtils aclClassIdUtils;
@@ -76,11 +77,30 @@ public class JdbcAclService implements AclService {
 	// ===================================================================================================
 
 	public JdbcAclService(DataSource dataSource, LookupStrategy lookupStrategy) {
+		this(
+			dataSource,
+			lookupStrategy,
+			new SidRetrievalStrategyImpl(),
+			new ObjectIdentityRetrievalStrategyImpl(),
+			new ObjectIdentityRetrievalStrategyImpl()
+		);
+	}
+
+	public JdbcAclService(
+			DataSource dataSource,
+			LookupStrategy lookupStrategy,
+			SidRetrievalStrategy sidRetrievalStrategy,
+			ObjectIdentityGenerator objectIdentityGenerator,
+			ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy
+	) {
 		Assert.notNull(dataSource, "DataSource required");
 		Assert.notNull(lookupStrategy, "LookupStrategy required");
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.lookupStrategy = lookupStrategy;
 		this.aclClassIdUtils = new AclClassIdUtils();
+		this.sidRetrievalStrategy = sidRetrievalStrategy;
+		this.objectIdentityGenerator = objectIdentityGenerator;
+		this.objectIdentityRetrievalStrategy = objectIdentityRetrievalStrategy;
 	}
 
 	// ~ Methods
@@ -169,5 +189,20 @@ public class JdbcAclService implements AclService {
 
 	protected boolean isAclClassIdSupported() {
 		return aclClassIdSupported;
+	}
+
+	@Override
+	public ObjectIdentityRetrievalStrategy getObjectIdentityRetrievalStrategy() {
+		return objectIdentityRetrievalStrategy;
+	}
+
+	@Override
+	public ObjectIdentityGenerator getObjectIdentityGenerator() {
+		return objectIdentityGenerator;
+	}
+
+	@Override
+	public SidRetrievalStrategy getSidRetrievalStrategy() {
+		return sidRetrievalStrategy;
 	}
 }

@@ -24,9 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.acls.domain.DefaultPermissionFactory;
-import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
 import org.springframework.security.acls.domain.PermissionFactory;
-import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclService;
 import org.springframework.security.acls.model.NotFoundException;
@@ -51,13 +49,16 @@ public class AclPermissionEvaluator implements PermissionEvaluator {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final AclService aclService;
-	private ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy = new ObjectIdentityRetrievalStrategyImpl();
-	private ObjectIdentityGenerator objectIdentityGenerator = new ObjectIdentityRetrievalStrategyImpl();
-	private SidRetrievalStrategy sidRetrievalStrategy = new SidRetrievalStrategyImpl();
+	private ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy;
+	private ObjectIdentityGenerator objectIdentityGenerator;
+	private SidRetrievalStrategy sidRetrievalStrategy;
 	private PermissionFactory permissionFactory = new DefaultPermissionFactory();
 
 	public AclPermissionEvaluator(AclService aclService) {
 		this.aclService = aclService;
+		setObjectIdentityRetrievalStrategy(aclService.getObjectIdentityRetrievalStrategy());
+		setObjectIdentityGenerator(aclService.getObjectIdentityGenerator());
+		setSidRetrievalStrategy(aclService.getSidRetrievalStrategy());
 	}
 
 	/**

@@ -27,16 +27,7 @@ import org.springframework.security.acls.domain.AccessControlEntryImpl;
 import org.springframework.security.acls.domain.GrantedAuthoritySid;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
 import org.springframework.security.acls.domain.PrincipalSid;
-import org.springframework.security.acls.model.AccessControlEntry;
-import org.springframework.security.acls.model.Acl;
-import org.springframework.security.acls.model.AclCache;
-import org.springframework.security.acls.model.AlreadyExistsException;
-import org.springframework.security.acls.model.ChildrenExistException;
-import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.MutableAclService;
-import org.springframework.security.acls.model.NotFoundException;
-import org.springframework.security.acls.model.ObjectIdentity;
-import org.springframework.security.acls.model.Sid;
+import org.springframework.security.acls.model.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -92,6 +83,19 @@ public class JdbcMutableAclService extends JdbcAclService implements MutableAclS
 	public JdbcMutableAclService(DataSource dataSource, LookupStrategy lookupStrategy,
 			AclCache aclCache) {
 		super(dataSource, lookupStrategy);
+		Assert.notNull(aclCache, "AclCache required");
+		this.aclCache = aclCache;
+	}
+
+	public JdbcMutableAclService(
+			DataSource dataSource,
+			LookupStrategy lookupStrategy,
+			AclCache aclCache,
+			SidRetrievalStrategy sidRetrievalStrategy,
+			ObjectIdentityGenerator objectIdentityGenerator,
+			ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy
+	) {
+		super(dataSource, lookupStrategy, sidRetrievalStrategy, objectIdentityGenerator, objectIdentityRetrievalStrategy);
 		Assert.notNull(aclCache, "AclCache required");
 		this.aclCache = aclCache;
 	}

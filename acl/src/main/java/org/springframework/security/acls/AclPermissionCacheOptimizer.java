@@ -22,8 +22,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.access.PermissionCacheOptimizer;
-import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
-import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.AclService;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.ObjectIdentityRetrievalStrategy;
@@ -40,11 +38,13 @@ import org.springframework.security.core.Authentication;
 public class AclPermissionCacheOptimizer implements PermissionCacheOptimizer {
 	private final Log logger = LogFactory.getLog(getClass());
 	private final AclService aclService;
-	private SidRetrievalStrategy sidRetrievalStrategy = new SidRetrievalStrategyImpl();
-	private ObjectIdentityRetrievalStrategy oidRetrievalStrategy = new ObjectIdentityRetrievalStrategyImpl();
+	private SidRetrievalStrategy sidRetrievalStrategy;
+	private ObjectIdentityRetrievalStrategy oidRetrievalStrategy;
 
 	public AclPermissionCacheOptimizer(AclService aclService) {
 		this.aclService = aclService;
+		setObjectIdentityRetrievalStrategy(aclService.getObjectIdentityRetrievalStrategy());
+		setSidRetrievalStrategy(aclService.getSidRetrievalStrategy());
 	}
 
 	public void cachePermissionsFor(Authentication authentication, Collection<?> objects) {

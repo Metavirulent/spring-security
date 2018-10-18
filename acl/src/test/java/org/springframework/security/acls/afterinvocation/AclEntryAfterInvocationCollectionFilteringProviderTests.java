@@ -20,9 +20,12 @@ import static org.assertj.core.api.Assertions.*;
 
 import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
+import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
+import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.*;
 import org.springframework.security.core.Authentication;
 
@@ -36,14 +39,24 @@ import java.util.List;
  */
 @SuppressWarnings({ "unchecked" })
 public class AclEntryAfterInvocationCollectionFilteringProviderTests {
+	private AclService service;
+
+	@Before
+	public void setup() {
+		service = mock(AclService.class);
+		when(service.getObjectIdentityRetrievalStrategy()).thenReturn(new ObjectIdentityRetrievalStrategyImpl());
+		when(service.getSidRetrievalStrategy()).thenReturn(new SidRetrievalStrategyImpl());
+	}
+
 	@Test
 	public void objectsAreRemovedIfPermissionDenied() throws Exception {
-		AclService service = mock(AclService.class);
 		Acl acl = mock(Acl.class);
 		when(acl.isGranted(any(), any(), anyBoolean())).thenReturn(
 				false);
 		when(service.readAclById(any(), any())).thenReturn(
 				acl);
+		when(service.getObjectIdentityRetrievalStrategy()).thenReturn(new ObjectIdentityRetrievalStrategyImpl());
+		when(service.getSidRetrievalStrategy()).thenReturn(new SidRetrievalStrategyImpl());
 		AclEntryAfterInvocationCollectionFilteringProvider provider = new AclEntryAfterInvocationCollectionFilteringProvider(
 				service, Arrays.asList(mock(Permission.class)));
 		provider.setObjectIdentityRetrievalStrategy(mock(ObjectIdentityRetrievalStrategy.class));
@@ -65,7 +78,7 @@ public class AclEntryAfterInvocationCollectionFilteringProviderTests {
 	@Test
 	public void accessIsGrantedIfNoAttributesDefined() throws Exception {
 		AclEntryAfterInvocationCollectionFilteringProvider provider = new AclEntryAfterInvocationCollectionFilteringProvider(
-				mock(AclService.class), Arrays.asList(mock(Permission.class)));
+				service, Arrays.asList(mock(Permission.class)));
 		Object returned = new Object();
 
 		assertThat(returned)
@@ -76,7 +89,6 @@ public class AclEntryAfterInvocationCollectionFilteringProviderTests {
 
 	@Test
 	public void nullReturnObjectIsIgnored() throws Exception {
-		AclService service = mock(AclService.class);
 		AclEntryAfterInvocationCollectionFilteringProvider provider = new AclEntryAfterInvocationCollectionFilteringProvider(
 				service, Arrays.asList(mock(Permission.class)));
 

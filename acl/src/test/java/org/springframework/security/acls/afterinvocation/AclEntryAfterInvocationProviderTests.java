@@ -18,10 +18,13 @@ package org.springframework.security.acls.afterinvocation;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
+import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
+import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.SpringSecurityMessageSource;
@@ -35,22 +38,29 @@ import java.util.List;
  */
 @SuppressWarnings({ "unchecked" })
 public class AclEntryAfterInvocationProviderTests {
+	private AclService service;
+
+	@Before
+	public void setup() {
+		service = mock(AclService.class);
+		when(service.getObjectIdentityRetrievalStrategy()).thenReturn(new ObjectIdentityRetrievalStrategyImpl());
+		when(service.getSidRetrievalStrategy()).thenReturn(new SidRetrievalStrategyImpl());
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsMissingPermissions() throws Exception {
 		try {
-			new AclEntryAfterInvocationProvider(mock(AclService.class), null);
+			new AclEntryAfterInvocationProvider(service, null);
 			fail("Exception expected");
 		}
 		catch (IllegalArgumentException expected) {
 		}
-		new AclEntryAfterInvocationProvider(mock(AclService.class),
+		new AclEntryAfterInvocationProvider(service,
 				Collections.<Permission> emptyList());
 	}
 
 	@Test
 	public void accessIsAllowedIfPermissionIsGranted() {
-		AclService service = mock(AclService.class);
 		Acl acl = mock(Acl.class);
 		when(acl.isGranted(any(List.class), any(List.class), anyBoolean())).thenReturn(
 				true);
@@ -74,7 +84,7 @@ public class AclEntryAfterInvocationProviderTests {
 	@Test
 	public void accessIsGrantedIfNoAttributesDefined() throws Exception {
 		AclEntryAfterInvocationProvider provider = new AclEntryAfterInvocationProvider(
-				mock(AclService.class), Arrays.asList(mock(Permission.class)));
+				service, Arrays.asList(mock(Permission.class)));
 		Object returned = new Object();
 
 		assertThat(
@@ -87,7 +97,7 @@ public class AclEntryAfterInvocationProviderTests {
 	@Test
 	public void accessIsGrantedIfObjectTypeNotSupported() throws Exception {
 		AclEntryAfterInvocationProvider provider = new AclEntryAfterInvocationProvider(
-				mock(AclService.class), Arrays.asList(mock(Permission.class)));
+				service, Arrays.asList(mock(Permission.class)));
 		provider.setProcessDomainObjectClass(String.class);
 		// Not a String
 		Object returned = new Object();
@@ -101,7 +111,6 @@ public class AclEntryAfterInvocationProviderTests {
 
 	@Test(expected = AccessDeniedException.class)
 	public void accessIsDeniedIfPermissionIsNotGranted() {
-		AclService service = mock(AclService.class);
 		Acl acl = mock(Acl.class);
 		when(acl.isGranted(any(List.class), any(List.class), anyBoolean())).thenReturn(
 				false);
@@ -132,7 +141,6 @@ public class AclEntryAfterInvocationProviderTests {
 
 	@Test
 	public void nullReturnObjectIsIgnored() throws Exception {
-		AclService service = mock(AclService.class);
 		AclEntryAfterInvocationProvider provider = new AclEntryAfterInvocationProvider(
 				service, Arrays.asList(mock(Permission.class)));
 

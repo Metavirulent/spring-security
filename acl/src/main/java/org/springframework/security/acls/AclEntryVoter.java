@@ -27,8 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.vote.AbstractAclVoter;
-import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
-import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclService;
 import org.springframework.security.acls.model.NotFoundException;
@@ -105,8 +103,8 @@ public class AclEntryVoter extends AbstractAclVoter {
 	// ================================================================================================
 
 	private AclService aclService;
-	private ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy = new ObjectIdentityRetrievalStrategyImpl();
-	private SidRetrievalStrategy sidRetrievalStrategy = new SidRetrievalStrategyImpl();
+	private ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy;
+	private SidRetrievalStrategy sidRetrievalStrategy;
 	private String internalMethod;
 	private String processConfigAttribute;
 	private List<Permission> requirePermission;
@@ -127,6 +125,8 @@ public class AclEntryVoter extends AbstractAclVoter {
 		this.aclService = aclService;
 		this.processConfigAttribute = processConfigAttribute;
 		this.requirePermission = Arrays.asList(requirePermission);
+		setObjectIdentityRetrievalStrategy(aclService.getObjectIdentityRetrievalStrategy());
+		setSidRetrievalStrategy(aclService.getSidRetrievalStrategy());
 	}
 
 	// ~ Methods

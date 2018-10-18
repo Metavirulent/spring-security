@@ -15,6 +15,9 @@
  */
 package org.springframework.security.acls.model;
 
+import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
+import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
+
 import java.util.List;
 import java.util.Map;
 
@@ -116,4 +119,33 @@ public interface AclService {
 	 */
 	Map<ObjectIdentity, Acl> readAclsById(List<ObjectIdentity> objects, List<Sid> sids)
 			throws NotFoundException;
+
+	/**
+	 * Obtains the ObjectIdentityRetrievalStrategy used to retrieve an ObjectIdentity from
+	 * a domain object.
+	 * @return the ObjectIdentityRetrievalStrategy to use. Defaults to {@link ObjectIdentityRetrievalStrategyImpl}.
+	 * @since 5.2.0
+	 */
+	default ObjectIdentityRetrievalStrategy getObjectIdentityRetrievalStrategy() {
+		return new ObjectIdentityRetrievalStrategyImpl();
+	}
+
+	/**
+	 * Obtains the ObjectIdentityGenerator used to create an ObjectIdentity from
+	 * an identity and type.
+	 * @return the ObjectIdentityGeneratorStrategy to use. Defaults to {@link ObjectIdentityRetrievalStrategyImpl}.
+	 * @since 5.2.0
+	 */
+	default ObjectIdentityGenerator getObjectIdentityGenerator() {
+		return new ObjectIdentityRetrievalStrategyImpl();
+	}
+
+	/**
+	 * Obtains a SidRetrievalStrategy to use to extract {@link Sid Sids} from an Authentication.
+	 * @return the SidRetrievalStrategy to use. Defaults to {@link SidRetrievalStrategyImpl}.
+	 * @since 5.2.0
+	 */
+	default SidRetrievalStrategy getSidRetrievalStrategy() {
+		return new SidRetrievalStrategyImpl();
+	}
 }

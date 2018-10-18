@@ -20,8 +20,6 @@ import java.util.List;
 
 import org.springframework.security.access.AfterInvocationProvider;
 import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl;
-import org.springframework.security.acls.domain.SidRetrievalStrategyImpl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclService;
 import org.springframework.security.acls.model.NotFoundException;
@@ -45,8 +43,8 @@ public abstract class AbstractAclProvider implements AfterInvocationProvider {
 
 	protected final AclService aclService;
 	protected Class<?> processDomainObjectClass = Object.class;
-	protected ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy = new ObjectIdentityRetrievalStrategyImpl();
-	protected SidRetrievalStrategy sidRetrievalStrategy = new SidRetrievalStrategyImpl();
+	protected ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy;
+	protected SidRetrievalStrategy sidRetrievalStrategy;
 	protected String processConfigAttribute;
 	protected final List<Permission> requirePermission;
 
@@ -66,6 +64,8 @@ public abstract class AbstractAclProvider implements AfterInvocationProvider {
 		this.aclService = aclService;
 		this.processConfigAttribute = processConfigAttribute;
 		this.requirePermission = requirePermission;
+		setObjectIdentityRetrievalStrategy(aclService.getObjectIdentityRetrievalStrategy());
+		setSidRetrievalStrategy(aclService.getSidRetrievalStrategy());
 	}
 
 	// ~ Methods
